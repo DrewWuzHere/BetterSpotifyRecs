@@ -1,5 +1,8 @@
 import numpy as np
 import random
+import scipy.spatial as sps
+
+'''
 class KDTree():
     
     def __init__(self, pts, a=0, depth=0):
@@ -50,10 +53,13 @@ def k_nearest(start_pt, search_tree, axis=0):
     # plot start_pt in k-space, or find the leaf nodes it's closest to 
     test_point = search_tree.sp
     nearby_points = []
+    leafNodeFound = False
     while (leafNodeFound == False):
         # if we don't have a first or second child we're at a leaf node which is the closest we'll get
         if (search_tree.fc == None and search_tree.sc == None):
-            nearby_points.concatenate(self.same)
+            
+            distance = scp.spatial.distance.cdist(start_pt, search_tree.same) # self.same is where we end
+            leafNodeFound = True
         if start_pt[axis] > test_point: # starts on the 0th axis
             # do the same thing with first_half on the 1st axis
             test_point = search_tree.fc.sp
@@ -65,22 +71,30 @@ def k_nearest(start_pt, search_tree, axis=0):
             search_tree = search_tree.sc
             axis = (axis + 1) % search_tree.pts.shape[1] # number of feats we keep track of
         elif start_pt[axis] == test_point: # we found a matching point, so nearest neighbors must be somewhere nearby? do i need to take more into account?
-            pass 
+            distance = scp.spatial.distance.cdist(start_pt, search_tree.same) 
             # look for nearby leaf nodes 
             # how the heck do i look for nearby leaf nodes
             # find nearest neighbors to start_pt
             # return those points
-
+            leafNodeFound = True
+'''
 # to find k nearest should I just delete the closest point from the list and then reconstruct it finding the second closest?
 
 
 # create some n-dimensional points
 # array that the data lives in is a 2d array, but the KDTree is (or however many d)
 
-my4dPoints = np.random.rand(100, 4)
-myKDTree = KDTree(my4dPoints)
 
-myKDTree.print()
+
+my4dPoints = np.random.rand(100, 4)
+myKDTree = sps.KDTree(my4dPoints)
+
+
 
 print("looking for points nearby")
-print(myKDTree.search((1, 1, 1, 1)))
+neighbor_distances, neighbor_indicies = myKDTree.query([1, 1, 1, 1], k = 3)
+print(neighbor_distances, "is how close our graph comes to 1, 1, 1, 1")
+for index in neighbor_indicies:
+	print(my4dPoints[index], "is a nearby value to 1, 1, 1, 1")
+
+# can i just use scipy?
