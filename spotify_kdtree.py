@@ -90,17 +90,17 @@ def k_nearest(start_pt, search_tree, axis=0):
 
 my4dPoints = np.random.rand(100, 4)
 
-mySongs = read_csv('hard-rock')
+mySongs = read_csv("trip-hop")
 track_ids = mySongs["track_id"].tolist()
-print("track id 0 is", track_ids[0])
 mySongs.drop("track_id", inplace = True, axis= 1)
 myKDTree = sps.KDTree(mySongs)
-
+arr = mySongs.to_numpy()
 print("looking for points nearby")
-fourteen_ones = [1] * 14
+fourteen_ones = [6.3294087230] * 14
 neighbor_distances, neighbor_indicies = myKDTree.query(fourteen_ones, k = 3)
 print(neighbor_distances, "is how close our graph comes to 1, 1, 1, 1")
 for index in neighbor_indicies:
+	print(arr[index, :], "is a nearby value")
 	print(track_ids[index], "is a nearby value to 1, 1, 1, 1")
 
 # can i just use scipy?

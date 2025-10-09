@@ -7,7 +7,11 @@ from sklearn.preprocessing import MinMaxScaler
 def read_csv(genre):
     # whole dataframe
     df = pd.read_csv('dataset.csv')
-
+    poss_styles = []
+    for musicStyle in df['track_genre']:
+         if musicStyle not in poss_styles:
+             poss_styles.append(musicStyle)
+    #print(poss_styles)
     my_df = df[df['track_genre'] == genre]
 
     # dataframe with only songs x features
@@ -35,4 +39,4 @@ def read_csv(genre):
 
 
 
-
+read_csv('british')
