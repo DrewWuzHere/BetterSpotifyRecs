@@ -46,3 +46,5 @@ for index in neighbor_indicies:
         smaller_df = df[df['track_id'] == track_ids[index] ]
         song_arr = smaller_df.to_numpy()
         print("You might like", song_arr[0][4], "by", song_arr[0][2], "!") 
+
+
