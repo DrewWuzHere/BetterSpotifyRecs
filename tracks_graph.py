@@ -54,7 +54,7 @@ def get_tracks(dataset):
                 track_data.append(id[14:])
     return track_data
 
-def get_spring_layout(G):
-     return nx.spring_layout(G)
 
+def get_spring_layout(G, dim):
+     return nx.spring_layout(G, dim)
 
