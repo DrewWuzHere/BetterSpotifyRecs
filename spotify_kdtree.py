@@ -133,38 +133,24 @@ class KDTree():
            self.fc.print()
         print(self.same, "at value", self.sp)
 
-'''
-    def k_nearest(self, start_pt, axis=0):
-        # plot start_pt in k-space, or find the leaf nodes it's closest to
-        test_point = search_tree.sp
-        nearby_points = []
-        leafNodeFound = False
-        while (leafNodeFound == False):
-            # if we don't have a first or second child we're at a leaf node which is the closest we'll get
-            if (search_tree.fc == None and search_tree.sc == None):
-
-                distance = scp.spatial.distance.cdist(start_pt, search_tree.same) # self.same is where we end
-                leafNodeFound = True
-            if start_pt[axis] > test_point: # starts on the 0th axis
-                # do the same thing with first_half on the 1st axis
-                test_point = search_tree.fc.sp
-                search_tree = search_tree.fc
-                axis = (axis + 1) % search_tree.pts.shape[1] # number of feats we keep track of
-            elif start_pt[axis] > test_point:
-                # do the same thing with second_half on the 1st axis
-                test_point = search_tree.sc.sp
-                search_tree = search_tree.sc
-                axis = (axis + 1) % search_tree.pts.shape[1] # number of feats we keep track of
-            elif start_pt[axis] == test_point: # we found a matching point, so nearest neighbors must be somewhere nearby? do i need to take more into account?
-                distance = scp.spatial.distance.cdist(start_pt, search_tree.same)
-                # look for nearby leaf nodes
-                # how the heck do i look for nearby leaf nodes
-                # find nearest neighbors to start_pt
-                # return those points
-                leafNodeFound = True
-
-# to find k nearest should I just delete the closest point from the list and then reconstruct it finding the second closest?
-'''
+    def k_nearest(self, start_pt, k = 2): # for finding more than one nearby neighbor. if you just want one nearby neighbor, use search instead
+        found_points = [0] * k
+        mySmallerKDTree = self
+        for i in range(k):
+            myMin, closestID, check_box = mySmallerKDTree.search(start_pt)
+            found_points[i] = closestID
+            mySmallerSongs = read_csv()
+            mySmallerSongs = mySmallerSongs.to_numpy()
+            rowindex = 0
+            for song in mySmallerSongs:
+                if song[0] == closestID:
+                    print("removing song ID", closestID)
+                    mySmallerSongs = np.delete(mySmallerSongs, rowindex, axis = 0)
+                rowindex += 1
+            mySmallerKDTree = KDTree(mySmallerSongs) 
+            # create a sub-kdtree with the closest point missing
+            # this is tremendously inefficient at large k values probably
+        return found_points      
 
 # create some n-dimensional points
 # array that the data lives in is a 2d array, but the KDTree is (or however many d)
@@ -173,7 +159,7 @@ class KDTree():
 
 my4dPoints = np.random.rand(100, 4)
 
-mySongs = read_csv("alternative")
+mySongs = read_csv()
 myKDTree = KDTree(mySongs.to_numpy())
 for song in mySongs.to_numpy():
     if song[0] == '58q2HKrzhC3ozto2nDdN4z':
@@ -191,7 +177,7 @@ fourteen_ones = [0.9310344827586207, 0.41189982189052105, 0.556, 0.319, 9, 0.137
 #fourteen_ones = ["yeah", 0.096774193549, 0.33011992630152964, 0.689, 0.739, 2, 0.09683333333333333, 1, 0.026, 0.0005, 0.6330845771144278, 0.064, 0.578, 0.45165831147704266, 0.5714285714285714]
 # should give back gorillaz on melancholy hill (id 0q6LuUqGLUiCPP1cbdwFs3)
 fourteen_ones = ["yeah", -0.0074945380203459665,0.028657416455284565,-0.01776030176370446,0.01601106398683131,0.016246769314095067,-0.1322633083242808,0.11479940947239312,-0.10706421770777681,-0.019097068030006565,-0.09454688315742632,-0.10544375112791222,0.10153541029951735,0.10730482143420414]
-
+melancholy = ["on melancholy hill", -0.0074945380203459700, 0.028657416455284600, -0.01776030176370450, 0.01601106398683130, 0.016246769314095100,-0.1322633083242810, 0.11479940947239300, -0.10706421770777700, -0.019097068030006600, -0.09454688315742630, -0.10544375112791200, 0.10153541029951700, 0.10730482143420400]
 print(mySongs.to_numpy().shape)
 
 nearest_dist, nearest_ID, check_box_nonexistent = myKDTree.search(fourteen_ones)
@@ -200,3 +186,4 @@ if check_box_nonexistent:
     print("welp")
 print(nearest_dist, "is how close our graph comes to [6.3294087230] * 14")
 print(nearest_ID, "is a nearby value to [6.3294087230] * 14")
+print(myKDTree.k_nearest(melancholy))
