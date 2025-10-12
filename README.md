@@ -7,5 +7,5 @@ Fixed input playlist. Graph numbers of songs generated vs runtime.
 
 Experiment 2:
 Quality test
-Input a playlist, use every input songs others than the last 5 to generate new songs.
-Count the overlap of last 5 unused input songs with new songs generated.
+Input a playlist, use every input songs others than the last 5 to generate 5 new songs.
+Count the overlap of last 5 unused input songs with 5 new songs generated.
