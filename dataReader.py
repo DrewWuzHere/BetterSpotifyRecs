@@ -5,7 +5,7 @@ import json
 
 
 # returns a numpy array with the song and then all of the features following
-def read_csv(genre):
+def read_csv():
 
     df = pd.read_csv("dataset.csv")
     valid_tracks = set(df["track_name"])
@@ -39,16 +39,18 @@ def read_csv(genre):
          if musicStyle not in poss_styles:
              poss_styles.append(musicStyle)
     #print(poss_styles)
-    my_df = df[df['track_genre'] == genre]
-    print(my_df)
-    print(df['track_genre'].unique())
 
-    if my_df.empty:
-        print(f"No tracks found for genre '{genre}' after filtering.")
-        return None 
+    ########
+    # if want to filter with genre
+    ########
+    # my_df = df[df['track_genre'] == genre]
+
+    # if my_df.empty:
+    #     print(f"No tracks found for genre '{genre}' after filtering.")
+    #     return None 
 
     # dataframe with only songs x features
-    my_df = my_df.drop(['artists', 'album_name', 'track_name', 'explicit', 'track_genre', 'Unnamed: 0'], axis=1) 
+    my_df = df.drop(['artists', 'album_name', 'explicit', 'track_genre', 'Unnamed: 0'], axis=1) 
 
     scaler = MinMaxScaler()
     my_df['popularity'] = scaler.fit_transform(my_df[['popularity']])
@@ -61,13 +63,11 @@ def read_csv(genre):
 
     arr = my_df.to_numpy()
 
-    print(arr[0,:])
-    print(arr[2,:])
+    # print(arr[0,:])
+    # print(arr[2,:])
 
     # track id, popularity, duration_ms, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, time_signature
 
 
     return my_df
 
-
-# read_csv('rock')
