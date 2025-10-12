@@ -50,7 +50,7 @@ def runExpiriment():
         # hand this point to kd tree to find neighbors/song recs
         my_df.drop(columns=['track_name'])
         kd = KDTree(my_df.to_numpy())
-        nearest_dist, nearest_ID, check_box_nonexistent = kd.search(avg_fts.)
+        nearest_dist, nearest_ID, check_box_nonexistent = kd.search(avg_fts)
         if check_box_nonexistent:
             print("welp")
         print(nearest_dist, "is how close our graph comes to our average song point")
