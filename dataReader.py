@@ -7,11 +7,13 @@ import json
 # returns a numpy array with the song and then all of the features following
 def read_csv():
 
-    df = pd.read_csv("dataset.csv")
+    df2 = pd.read_csv("embedding.csv")
+    '''
     valid_tracks = set(df["track_name"])
+    df = pd.read_csv("dataset.csv")
     track_list = []
 
-    with open("mpd.slice.0-999.json", "r") as f:
+    with open("mpd.slice.0-999.filtered.json", "r") as f:
         data = json.load(f)
         for playlist in data["playlists"]:
             for track in playlist["tracks"]:
@@ -67,7 +69,7 @@ def read_csv():
     # print(arr[2,:])
 
     # track id, popularity, duration_ms, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, time_signature
+'''
 
-
-    return my_df
+    return df2
 
