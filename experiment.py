@@ -18,6 +18,70 @@ client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, clien
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 
+
+def rec_analysis(trials):
+
+    
+
+    # loops through playlists in json file
+    for i in range(trials):
+        total_loc = [0] * 13
+        playlist = getPlaylist_json(i)
+        test_set = playlist['tracks']
+        test_size = len(test_set)
+        if test_size == 0:
+            print("playlist was too short")
+            continue
+        embed_df = pd.read_csv("embedding.csv")
+    
+        id_list = []
+            
+        # for every song in our test set grab the track_id and put on a list
+        for song in test_set:
+            id_list.append(song['track_uri'].split(':')[-1])
+
+
+        avg_fts = [0] * 13
+        for track_id in id_list:
+            # go into df and grab row as list
+            location = embed_df[embed_df['track_id'] == track_id]
+            if location.empty:
+                # this shouldn't happen since all embedded songs
+                print(f"Warning: no match found for track_id {track_id}")
+                # skip this track if not found
+                continue  
+            
+            # chop off the song ids
+            location = location[1:]
+            # add to cumulitive list
+            for i in range(len(location[1:])):
+                total_loc += location[i]
+            
+        # average location 
+        avg_loc = [0]*13
+        for i in range(len(total_loc)):
+            avg_loc[i] = total_loc[i] / test_size
+        
+        avg_loc.insert(0, 'test')
+        kd = KDTree(embed_df.to_numpy())
+        
+        nearest_dist, nearest_ID, check_box_nonexistent = kd.k_nearest(avg_loc, 5)
+        print(nearest_dist, "is how close our graph comes to our average song point")
+        print(nearest_ID, "is a nearby value to our average song point")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # using our json playlist data, this function loads file and retrieves playlist
 # and returns playlist dictionary
 def getPlaylist_json(i):
