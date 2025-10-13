@@ -41,7 +41,8 @@ def build_graph_edges(graph, track_data, dataset):
                         graph.add_edge(b, a, weight= new_w)
         return graph
 
-
+# get unique track ids from dataset
+# return list of all track ids
 def get_tracks(dataset):
     track_data = []
     f = open(dataset)
@@ -55,10 +56,12 @@ def get_tracks(dataset):
                 track_data.append(id[14:])
     return track_data
 
+# generate spring layout in n dimentions with the graph
 def get_spring_layout(G, d):
      return nx.spring_layout(G, dim=d)
 
-
+# turn spring layout into pandas dataframe with rows representing ids
+# each columns represent id's position in each dimensions
 def to_df(pos):
     n_positions =[]
     for n, coords in pos.items():
@@ -69,7 +72,20 @@ def to_df(pos):
     df = pd.DataFrame(n_positions)
     return df
 
+# save dataframe as csv
 def df_to_csv(dataf, csv_path):
     df = dataf
     path = csv_path
     df.to_csv(path, index=False)
+
+# save every edges in graph as csv
+# column1: track1, column2: track2, column3: number of edges between track1 and 2
+def edges_csv(graph, csv_path):
+    e = graph.edges
+    edges_list = []
+    for node1, node2 in e:
+        edges_list.append({"track1": node1, "track2": node2, "weight": graph.edges[node1,node2]['weight']})
+    e_df = pd.DataFrame(edges_list)
+    path = csv_path
+    e_df.to_csv(path, index=False)
+    
