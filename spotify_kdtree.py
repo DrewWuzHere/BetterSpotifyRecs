@@ -129,7 +129,7 @@ class KDTree():
            self.fc.print()
         print(self.same, "at value", self.sp)
 
-    def k_nearest_old(self, start_pt, k = 2): # for finding more than one nearby neighbor. if you just want one nearby neighbor, use search instead
+    def k_nearest(self, start_pt, k = 2): # for finding more than one nearby neighbor. if you just want one nearby neighbor, use search instead
         found_points = [0] * k
         mySmallerKDTree = self
         for i in range(k):
@@ -147,7 +147,7 @@ class KDTree():
             # create a sub-kdtree with the closest point missing
             # this is tremendously inefficient at large k values probably
         return found_points      
-    def k_nearest(self, new_fts, k = 2): # assume new_fts doesn't have the track id with it, so it's the same size as a location in same_points
+    def k_nearest_new(self, new_fts, k = 2): # assume new_fts doesn't have the track id with it, so it's the same size as a location in same_points
         if (self.fc == None and self.sc == None):
            print("found a leaf node, we should look along the axis that split to get to this point")
            check_box = False
