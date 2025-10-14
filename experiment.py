@@ -9,14 +9,6 @@ import random
 import matplotlib.pyplot as plt
 import time
 
-# using this so we can easily look up a song name and artist using a track id
-# embedding got messed up so we only have the track ids and not all ids are in the csv dataset 
-# give us easy access to song names and artists
-CLIENT_ID = '99f895fcb6fe44dbb5b58ecece413a2b'
-CLIENT_SECRET = '70d4e35469ca4be489202a2e9064edf2'
-client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
-sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
 
 # using our json playlist data, this function loads file and retrieves playlist
 # and returns playlist dictionary
@@ -217,15 +209,7 @@ def runtime():
 
 
 
-
-
 def rec_analysis(trials):
-            
-            # embed_df = pd.read_csv("embedding.csv")
-            # kd = KDTree(embed_df.to_numpy())
-            # location = [0.9] * 13
-            # location.insert(0, "test")
-            # nearest_list = kd.k_nearest(location, 5)
             
 
 
@@ -311,12 +295,10 @@ def rec_analysis(trials):
     plt.show()
 
 
+
+
 rec_analysis(10)
     
 # qualitativeExperiment(3)
 
 # runtime()
-
-
-
-# if five recs song appear in any playlist with the songs i do have, win
