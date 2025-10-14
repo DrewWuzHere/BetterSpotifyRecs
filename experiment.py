@@ -12,74 +12,10 @@ import time
 # using this so we can easily look up a song name and artist using a track id
 # embedding got messed up so we only have the track ids and not all ids are in the csv dataset 
 # give us easy access to song names and artists
-CLIENT_ID = ''
-CLIENT_SECRET = ''
+CLIENT_ID = '99f895fcb6fe44dbb5b58ecece413a2b'
+CLIENT_SECRET = '70d4e35469ca4be489202a2e9064edf2'
 client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
-
-
-def rec_analysis(trials):
-
-    
-
-    # loops through playlists in json file
-    for i in range(trials):
-        total_loc = [0] * 13
-        playlist = getPlaylist_json(i)
-        test_set = playlist['tracks']
-        test_size = len(test_set)
-        if test_size == 0:
-            print("playlist was too short")
-            continue
-        embed_df = pd.read_csv("embedding.csv")
-    
-        id_list = []
-            
-        # for every song in our test set grab the track_id and put on a list
-        for song in test_set:
-            id_list.append(song['track_uri'].split(':')[-1])
-
-
-        avg_fts = [0] * 13
-        for track_id in id_list:
-            # go into df and grab row as list
-            location = embed_df[embed_df['track_id'] == track_id]
-            if location.empty:
-                # this shouldn't happen since all embedded songs
-                print(f"Warning: no match found for track_id {track_id}")
-                # skip this track if not found
-                continue  
-            
-            # chop off the song ids
-            location = location[1:]
-            # add to cumulitive list
-            for i in range(len(location[1:])):
-                total_loc += location[i]
-            
-        # average location 
-        avg_loc = [0]*13
-        for i in range(len(total_loc)):
-            avg_loc[i] = total_loc[i] / test_size
-        
-        avg_loc.insert(0, 'test')
-        kd = KDTree(embed_df.to_numpy())
-        
-        nearest_dist, nearest_ID, check_box_nonexistent = kd.k_nearest(avg_loc, 5)
-        print(nearest_dist, "is how close our graph comes to our average song point")
-        print(nearest_ID, "is a nearby value to our average song point")
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # using our json playlist data, this function loads file and retrieves playlist
@@ -95,15 +31,17 @@ def getPlaylist_json(i):
     return playlist
 
        
+# this function reccomends a song for all but five songs on a playlist, it then compares the features of the reccomended song to 
+# features of the five songs not included in the reccomendation. The results are plotted as a bar graph illustrating the difference in features.
+#  Trials are the number of playlists you want to run this experiment for.
+def qualitativeExperiment(trials):
 
-def qualitativeExperiment():
-    # for this many playlists we can test our code by reccomending songs based on all but five songs from
-    # from the playlist, and then compare our reccomendations to the five songs that weren't used
     song_num = []
-    runtime = []
-    avg_fts_diff = [0]*13
+    avg_fts_diff = [0] * 13
+    avg_dist = [0] * 13
     playlist_count = 0
-    for i in range(10):
+    
+    for i in range(trials):
         playlist_count += 1
         playlist = getPlaylist_json(i)
         test_set = playlist['tracks'][:-5]
@@ -120,22 +58,19 @@ def qualitativeExperiment():
         for song in test_set:
             name = song['track_name']
             ids_df = read_csv()
-            # under 'track_uri' is the song ID
-            
+            # under 'track_uri' is the song ID after the final colon
             id_list.append(song['track_uri'].split(':')[-1])
             
             
         avg_fts = [0] * 13
         for track_id in id_list:
-            
             # Find the row(s) matching this track_id
             matching_rows = embedded_df[embedded_df['track_id'] == track_id]
-
             if matching_rows.empty:
+                # this shouldn't happen since all embedded songs
                 print(f"Warning: no match found for track_id {track_id}")
                 # skip this track if not found
                 continue  
-
             # # Keep only numeric feature columns
             features_only = matching_rows.select_dtypes(include=np.number)
 
@@ -190,9 +125,6 @@ def qualitativeExperiment():
                 actual_avg_fts[i] += value
 
 
-        # actual_avg_fts = calc_avg_fts(actual, embedded_df)
-
-
         fts_diff = [0]*13
         avg_fts = avg_fts[1:]
         for i, ft in enumerate(actual_avg_fts):
@@ -205,15 +137,29 @@ def qualitativeExperiment():
         print("graph proximity: ", nearest_dist)
 
         # adding the overall feature difference to a cumulitive list
+        # and adding nearest_dist to cumulitive list
         for i, ft in enumerate(avg_fts_diff):
             avg_fts_diff[i] = avg_fts_diff[i] + fts_diff[i]
+            # avg_dist = avg_dist[i] + nearest_dist
 
+
+
+    # final averaging for feature difference and nearest distance
     for i, ft in enumerate(avg_fts_diff):
-            avg_fts_diff[i] = avg_fts_diff[i] // playlist_count
+            avg_fts_diff[i] = avg_fts_diff[i] / playlist_count
+            # avg_dist = float(avg_dist[i]) / playlist_count
+
+
     feature_names = ["popularity", "duration_ms", "danceability", "energy", "loudness", "mode", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo", "time_signature"]
-    plot_feature_difference(avg_fts_diff, feature_names, playlist["name"])
+    plt.figure(1)
+    titleOne = f"Average Feature Differences Between Reccomended Features and Actual Features"
+    plot_feature_difference(avg_fts_diff, titleOne, feature_names)
+    plt.figure(2)
+    titleTwo = f"Avgerage Distance from Reccomended Song Features to Average Features from Test Playlists"
+    plot_feature_difference(nearest_dist, titleTwo, feature_names)
+    
 
-
+    return
 
 
 
@@ -221,7 +167,7 @@ def qualitativeExperiment():
 #parameters = list of differences for each feature, feature names (optional), playlist title
 #plots average feature difference between reccomended songs and actual songs take from playlist
 #"""
-def plot_feature_difference(fts_diff, feature_names=None, playlist_name="Playlist"):
+def plot_feature_difference(fts_diff, title, feature_names=None):
     if feature_names is None:
         # default feature names
         feature_names = [f"Feature {i+1}" for i in range(len(fts_diff))]
@@ -231,14 +177,14 @@ def plot_feature_difference(fts_diff, feature_names=None, playlist_name="Playlis
     plt.bar(feature_names, fts_diff, color='skyblue')
     plt.xlabel("Features")
     plt.ylabel("Average Difference")
-    plt.title(f"Average Feature Difference for {playlist_name}")
+    plt.title(title)
     plt.xticks(rotation=45)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
     plt.show()
 
 
-
+# this code finds k-nearest n
 def runtime():
     embedded_df = pd.read_csv("embedding.csv")
     kd = KDTree(embedded_df.to_numpy())
@@ -251,6 +197,7 @@ def runtime():
         start_time = time.time()
         for j in range(count):
             fts = embedded_df.iloc[j].to_numpy()
+            # should this be j or should this be a constant
             kd.k_nearest(fts, j)
         end_time = time.time()
 
@@ -269,15 +216,107 @@ def runtime():
     return runtimes, song_counts
 
 
-            
-            
-            
 
 
 
+def rec_analysis(trials):
+            
+            # embed_df = pd.read_csv("embedding.csv")
+            # kd = KDTree(embed_df.to_numpy())
+            # location = [0.9] * 13
+            # location.insert(0, "test")
+            # nearest_list = kd.k_nearest(location, 5)
+            
+
+
+    song_num = []
+    edges_num = []
+
+    # loops through playlists in json file
+    for i in range(trials):
+        total_loc = [0] * 13
+        playlist = getPlaylist_json(i)
+        test_set = playlist['tracks']
+        test_size = len(test_set)
+        if test_size == 0:
+            print("playlist was too short")
+            continue
+        embed_df = pd.read_csv("embedding.csv")
     
-# qualitativeExperiment()
+        id_list = []
+            
+        # for every song in our test set grab the track_id and put on a list
+        for song in test_set:
+            id_list.append(song['track_uri'].split(':')[-1])
 
-runtime()
+
+        avg_fts = [0] * 13
+        for track_id in id_list:
+            # go into df and grab row as list
+            row = embed_df[embed_df['track_id'] == track_id]
+            if not row.empty:
+                location = row.iloc[0, 1:].tolist()
+                
+            
+            if len(location) == 0:
+                # this shouldn't happen since all embedded songs
+                print(f"Warning: no match found for track_id {track_id}")
+                # skip this track if not found
+                continue  
+                        
+            # add to cumulitive list
+            for s in range(len(location)):
+                total_loc += location[s]
+            
+            
+        # average location 
+        avg_loc = [0]*13
+        for j in range(len(total_loc)):
+            print(total_loc[j])
+            avg_loc[j] = total_loc[j] / test_size
+        
+        kd = KDTree(embed_df.to_numpy())
+
+        avg_loc = [float(x) for x in avg_loc]
+        avg_loc.insert(0, 'test')
+        
+
+        nearest_list = kd.k_nearest(avg_loc, 5)
+        print()
+        print(nearest_list, "is a nearby value to our average song point")
+        print()
+
+        network = pd.read_csv("edges(in).csv")
+
+        # loop through ids in songs recs and if it is found in the csv then add the connections
+        for id in nearest_list:
+            connections = 0
+            # if this is in a pair in the csv
+            match = network[(network['track1'] == id) | (network['track2'] == id)]
+            if not match.empty:
+                connections += match['weight'].sum()
+        
+        song_num.append(test_size)
+        edges_num.append(connections)
+        print("connections: ", connections)
+        print(song_num)
+        print(edges_num)
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(song_num, edges_num)
+    plt.title("Playlist Connections vs Number of Songs Queried")
+    plt.xlabel("Number of Songs")
+    plt.ylabel("Times the Recommend Songs Appeared on Playlists with the Test Songs")
+    plt.grid(True)
+    plt.show()
 
 
+rec_analysis(10)
+    
+# qualitativeExperiment(3)
+
+# runtime()
+
+
+
+# if five recs song appear in any playlist with the songs i do have, win
