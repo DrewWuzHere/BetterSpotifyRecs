@@ -1,11 +1,44 @@
 # BetterSpotifyRecs
-Better Spotify Recs is a recommendation algorithm that takes in an playlist of songs through a data set and generates n recommeded songs.
+Better Spotify Recs is a recommendation algorithm that generates k recommeded songs.
 
-Experiment 1, runtimeTest():
-Fixed input playlist. Graph numbers of recommended songs generated vs runtime.
+## Description
+Better Spotify Recs is built on a spotify playlist set of 1000 playlist. It embeds this data and uses a KD Tree to reccomend the k nearest songs. Also attached are three experiments for the code to illustrate it's accuracy, runtime, and embedding.
 
-Experiment 2, qualityTest(trials):
-Given a number of trials, test will pull playlists from a data set and for each playlist recommend 5 songs. The function counts each time one of the recommended songs appears on a playlist with one of the test playlist songs. Then a plot window will pop up showing the songs queried on the x-axis vs the amount of connections with the recommended songs on the y-axis.
+## Getting Started
+
+### Dependencies
+
+* libraries used:
+  - json
+  - pandas
+  - matplotlib.pyplot
+  - time
+  - operator
+  - numpy
+  - scipy
+  - networkx
+  - itertools
+  - heapq
+
+ ### Installing
+
+* How/where to download your program
+* Any modifications needed to be made to files/folders
+
+### Executing progra
+
+* How to run the program
+* Step-by-step bullets
+```
+code blocks for commands
+
+   
+
+
+
+
+
+
 
 
 
