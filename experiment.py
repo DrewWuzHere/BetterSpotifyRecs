@@ -1,51 +1,47 @@
 from spotify_kdtree import KDTree
 import json
 import pandas as pd
-from dataReader import read_csv
-import numpy as np
-import random
 import matplotlib.pyplot as plt
 import time
 import operator
 
 
-# using our json playlist data, this function loads file and retrieves playlist, 'i' is the playlist number in our dataset
-# and returns playlist dictionary
+# using our json playlist data, this function loads file and retrieves playlistand returns playlist dictionary
+# 'i' is the playlist number in the data set, range = 1-999
 def getPlaylist_json(i):
     with open("mpd.slice.0-999.json", "r") as f:
         data = json.load(f)
         playlists = data["playlists"]
+        print(len(playlists))
         playlist = playlists[i]
-        # print("Playlist name:", playlist["name"])
-        # for track in playlist["tracks"]:
-        #     print("-", track["track_name"], "by", track["artist_name"])
+        print("Playlist name:", playlist["name"])
+        for track in playlist["tracks"]:
+            print("-", track["track_name"], "by", track["artist_name"])
     return playlist
 
-       
 
-# this code finds k-nearest n
-def runtime():
+# this code tracks and plots runtime of k-nearest function
+def runtimeTest():
     embedded_df = pd.read_csv("embedding.csv")
     kd = KDTree(embedded_df.to_numpy())
 
     runtimes = []
     song_counts = []
 
-    # trials
-    for count in range(1, 501, 50): 
-        start_time = time.time()
+    # 50 trials, for each trial find j number of neighbors 
+    for count in range(1, 21): 
         for j in range(count):
-            fts = embedded_df.iloc[j].to_numpy()
-            # should this be j or should this be a constant
+            fts = embedded_df.iloc[40].to_numpy()
+            start_time = time.time()
             kd.k_nearest(fts, j)
-        end_time = time.time()
+            end_time = time.time()
 
         runtimes.append(end_time - start_time)
         song_counts.append(count)
 
     # plot runtime vs number of songs
     plt.figure(figsize=(8, 5))
-    plt.plot(song_counts, runtimes, marker='o')
+    plt.plot(song_counts, runtimes)
     plt.title("Runtime vs Number of Songs Queried")
     plt.xlabel("Number of Songs Queried")
     plt.ylabel("Total Runtime (seconds)")
@@ -55,8 +51,8 @@ def runtime():
     return runtimes, song_counts
 
 
-
-def rec_analysis(trials):
+# plots how many time the recommended song is seen in a playlist from songs of the tests playlist
+def qualityTest(trials):
 
     song_num = []
     edges_num = []
@@ -91,6 +87,12 @@ def rec_analysis(trials):
                 print(f"Warning: no match found for track_id {track_id}")
                 # skip this track if not found
                 continue  
+            
+            if location[0] == 0:
+                print("ah shit")
+
+                return
+            
                         
             # add to cumulitive list
             for s in range(len(location)):
@@ -198,6 +200,9 @@ def getRec(n, playlist):
         
 
     nearest_list = kd.k_nearest(avg_loc, n)
+    print("Playlist name:", playlist["name"])
+    for track in playlist["tracks"]:
+        print("-", track["track_name"], "by", track["artist_name"])
     
     print()
     print("We think you might like")
@@ -209,9 +214,8 @@ def getRec(n, playlist):
         count += 1
 
 
-playlist = getPlaylist_json(22)
-getRec(3, playlist)
 
-# rec_analysis(10)
-    
-# runtime()
+playlist = getPlaylist_json(22)
+getRec(5, playlist)
+# qualityTest(3)
+# runtimeTest()
