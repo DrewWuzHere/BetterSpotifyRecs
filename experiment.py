@@ -113,7 +113,7 @@ def qualityTest(trials):
         print(nearest_list, "is a nearby value to our average song point")
         print()
 
-        network = pd.read_csv("edges(in).csv")
+        network = pd.read_csv("edges.csv")
 
         # loop through ids in songs recs and if it is found in the csv then add the connections
         total_conns = 0
