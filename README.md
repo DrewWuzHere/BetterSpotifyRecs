@@ -2,7 +2,7 @@
 Better Spotify Recs is a recommendation algorithm that generates k recommeded songs.
 
 ## Description
-Better Spotify Recs is built on a spotify playlist set of 1000 playlist. It embeds this data and uses a KD Tree to reccomend the k nearest songs. Also attached are three experiments for the code to illustrate it's accuracy, runtime, and embedding.
+Better Spotify Recs is built on a spotify playlist set of 1000 playlists. It embeds this data and uses a KD Tree to reccomend the k-nearest songs. Also attached are three experiments for the code to illustrate it's accuracy, runtime, and embedding.
 
 ## Getting Started
 
