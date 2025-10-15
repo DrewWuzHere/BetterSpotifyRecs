@@ -31,6 +31,33 @@ Better Spotify Recs is built on a spotify playlist set of 1000 playlists. It emb
 * seeker() contains commented code that will print the k-nearest points demonstrating KD Tree functionality
 
 
+## Other
+
+### File descriptions
+
+* experiment.py
+  - holds two types of experiments that can be run by uncommenting the last lines
+* spotify_kdtree.py
+  - containes KD Tree data structure and search functions
+* seeker.py
+  - given a point, can find the nearest point
+* tracks_graph.py
+  - Handles embedding songs into networkx based on playlist connections and creates embedding.csv
+
+* playlist_data Folder and mpd.slic.0-999.json
+  - playlist and song data used for embedding
+* embedding.csv
+  - track ids followed by 13 floats that represent dimension locations
+ 
+* underground_test.ipynb
+  - jupyter lab notebook illustrating the underground song experiment
+* graph_tester.ipynb
+  - jupyter lab notebook illustrating the embedding process
+* experiment.ipynb
+  - jupyter lab notebook illustrating runtime and song rec quality experiments
+    
+
+
 
 
    
