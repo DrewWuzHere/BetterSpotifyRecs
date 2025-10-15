@@ -165,7 +165,7 @@ class KDTree():
            self.fc.print()
         print(self.same, "at value", self.sp)
 
-    def k_nearest(self, start_pt, k = 2): # for finding more than one nearby neighbor. if you just want one nearby neighbor, use search instead
+    def k_nearest_old(self, start_pt, k = 2): # for finding more than one nearby neighbor. if you just want one nearby neighbor, use search instead
         found_points = [0] * k
         mySmallerKDTree = self
         mySmallerSongs = pd.read_csv("embedding.csv")
@@ -184,7 +184,7 @@ class KDTree():
             # this is tremendously inefficient at large k values probably
         return found_points
 
-    def k_nearest_new(self, new_fts, k = 2, depth = 0): # assume new_fts doesn't have the track id with it, so it's the same size as a location in same_points
+    def k_nearest(self, new_fts, k = 2, depth = 0): # assume new_fts doesn't have the track id with it, so it's the same size as a location in same_points
         global nearest_points
         flag = False
         if depth == 0:
@@ -212,7 +212,7 @@ class KDTree():
             print("went deeper, and check box came back", check_box)
             print(flag)
             if flag:
-                return nearest_points
+                return list(nearest_points.track_ids.values())
             else:
                 print("depth is", depth)
                 return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
@@ -238,11 +238,10 @@ class KDTree():
                 print(nearest_points.get_max())
                 check_box = True # search the other side of the box
             print("went deeper, and check box came back", check_box)
-            return nearest_points, check_box
             print(flag)
 
             if flag:
-                return nearest_points
+                return list(nearest_points.track_ids.values())
             else:
                 print("depth is", depth)
                 return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
@@ -269,7 +268,7 @@ class KDTree():
             print(flag)
 
             if flag:
-                return nearest_points
+                return list(nearest_points.track_ids.values())
             else:
                 print("depth is", depth)
                 return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
@@ -303,7 +302,7 @@ class KDTree():
             print(flag)
 
             if flag:
-                return nearest_points
+                return list(nearest_points.track_ids.values())
             else:
                 print("depth is", depth)
                 return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
@@ -329,7 +328,7 @@ class KDTree():
             print(flag)
 
             if flag:
-                return nearest_points
+                return list(nearest_points.track_ids.values())
             else:
                 print("depth is", depth)
                 return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
@@ -370,4 +369,4 @@ if __name__ == '__main__':
 #	print(myKDTree.k_nearest(melancholy_rounded))
 #	print(myKDTree.k_nearest(melancholy_direct))
 	print(myKDTree.k_nearest(problematic))
-	print(myKDTree.k_nearest(problematic))
+	print(myKDTree.k_nearest(problematic, k=9))    
