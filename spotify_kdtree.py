@@ -2,8 +2,9 @@ import numpy as np
 import random
 import scipy as scp
 import pandas as pd
-import heapq
-from dataReader import read_csv
+import heapq_max as heapq
+import heapq as hq
+import copy as cpy
 
 class KDTree():
 
@@ -16,7 +17,7 @@ class KDTree():
             pts = np.concatenate((track_ids, pts), axis = 1)
             print("did pts round? pts[0][0] is", pts[0][1])
         # look at the ath axis
-        
+
         feats = pts[:, a]
         self.fc = None
         self.sc = None
@@ -26,7 +27,7 @@ class KDTree():
         split_val = ft_sort[len(ft_sort)//2] # i like this line cuz it covers the case where there's only one thing
 
         self.first_half = pts[ feats <  split_val  ]
-        self.second_half = pts[ feats >  split_val  ] 
+        self.second_half = pts[ feats >  split_val  ]
         self.same = pts[feats == split_val] # points that exist on the split's axis
         if self.first_half.shape[0] > 0:
             self.fc = KDTree( self.first_half, a = (a+1) % (pts.shape[1] - 1) + 1, depth=depth+1) # we write the axis weird cuz we never want it to be 0 as that's for track IDs
@@ -167,11 +168,11 @@ class KDTree():
     def k_nearest(self, start_pt, k = 2): # for finding more than one nearby neighbor. if you just want one nearby neighbor, use search instead
         found_points = [0] * k
         mySmallerKDTree = self
+        mySmallerSongs = pd.read_csv("embedding.csv")
+        mySmallerSongs = mySmallerSongs.to_numpy()
         for i in range(k):
             myMin, closestID, check_box = mySmallerKDTree.search(start_pt)
             found_points[i] = closestID
-            mySmallerSongs = read_csv()
-            mySmallerSongs = mySmallerSongs.to_numpy()
             rowindex = 0
             for song in mySmallerSongs:
                 if song[0] == closestID:
@@ -183,7 +184,15 @@ class KDTree():
             # this is tremendously inefficient at large k values probably
         return found_points
 
-    def k_nearest_new(self, new_fts, nearest_points, k = 2): # assume new_fts doesn't have the track id with it, so it's the same size as a location in same_points
+    def k_nearest_new(self, new_fts, k = 2, depth = 0): # assume new_fts doesn't have the track id with it, so it's the same size as a location in same_points
+        global nearest_points
+        flag = False
+        if depth == 0:
+            print("heyo!")
+            flag = True
+            nearest_points = DistanceHeap(k)
+        print("start of stackframe: depth is", depth)
+        save_d = cpy.deepcopy(depth)
         if (self.fc == None and self.sc == None):
             print("found a leaf node, we should look along the axis that split to get to this point")
             check_box = False
@@ -191,7 +200,6 @@ class KDTree():
             closest_track = self.same[0][0] # track id of first item on the axis
             for same_array in self.same:
                 poss_dist = np.sqrt(np.einsum('i, i->', new_fts[1:] - same_array[1:], new_fts[1:] - same_array[1:]))
-                # poss_dist = scp.spatial.distance.cdist(new_fts, same_points[key]) # i think we want to get value from this key?
                 if poss_dist < min_dist:
                     min_dist = poss_dist # saves the new minimum distance
                     closest_track = key
@@ -202,13 +210,19 @@ class KDTree():
                 check_box = True
             print("self.same is", self.same)
             print("went deeper, and check box came back", check_box)
-            return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
+            print(flag)
+            if flag:
+                return nearest_points
+            else:
+                print("depth is", depth)
+                return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
 
 
            # happens when we look for a song not in our dataset
            # never fear, just look for the self.same and then move our way back up the data tree!
         if self.fc != None and new_fts[self.a] < self.sp: # if new fts on axis a is less than the split point, it would have gone into the first half
-            myMin, closestID, check_other_box = self.fc.k_nearest(new_fts)
+            nearest_points, check_other_box = self.fc.k_nearest(new_fts, k = k, depth = depth + 1)
+            depth = save_d
             check_box = False
             if check_other_box and self.sc != None: # check the other box
                 # search over self.sc.first_half and self.sc.second_half
@@ -217,19 +231,25 @@ class KDTree():
                 all_points = np.concatenate((all_points, self.sc.same))
                 for key in all_points:
                     poss_dist = np.sqrt(np.einsum('i, i->', new_fts[1:] - key[1:], new_fts[1:] - key[1:] ))# i think we want to get value from this key?
-                    if poss_dist < myMin:
+                    if poss_dist < nearest_points.get_max() :  # gets the largest distance in our heap
                         print("the real min was on the other half!")
-                        myMin = poss_dist # saves the new minimum distance
-                        nearest_points.add(min_dist, closest_track)
-            if myMin > abs(new_fts[self.a] - self.sp): # a'th coordinate of our point minus split point on that a-axis = distance to the line
-                print(myMin)
+                        nearest_points.add(poss_dist, key[0]) # key[0] is the track id
+            if nearest_points.get_max() > abs(new_fts[self.a] - self.sp): # a'th coordinate of our point minus split point on that a-axis = distance to the line
+                print(nearest_points.get_max())
                 check_box = True # search the other side of the box
             print("went deeper, and check box came back", check_box)
-            nearest_points.add(myMin)
             return nearest_points, check_box
+            print(flag)
+
+            if flag:
+                return nearest_points
+            else:
+                print("depth is", depth)
+                return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
 
         if self.sc != None and new_fts[self.a] > self.sp: # if new fts on axis a is the same as than the split point, it would have gone into the second half
-            myMin, closestID, check_other_box = self.sc.search(new_fts)
+            nearest_points, check_other_box = self.sc.k_nearest(new_fts,k= k, depth = depth + 1)
+            depth = save_d
             check_box = False
             if check_other_box and self.fc != None: # check the other box
                 # search over self.fc.first_half and self.fc.second_half
@@ -238,18 +258,21 @@ class KDTree():
                 all_points = np.concatenate((all_points, self.fc.same))
                 for key in all_points:
                     poss_dist = np.sqrt(np.einsum('i, i->', new_fts[1:] - key[1:], new_fts[1:] - key[1:] )) # all_points isn't a dictionary, silly!
-                    if poss_dist < myMin:
+                    if poss_dist < nearest_points.get_max():
                         print("the real min was on the other half!")
-                        myMin = poss_dist # saves the new minimum distance
-                        closestID = key[0]
-                        nearest_points.add(min_dist, closest_track)
-            if myMin > abs(new_fts[self.a] - self.sp): # a'th coordinate of our point minus split point on that a-axis = distance to the line
-                print(myMin)
+                        nearest_points.add(poss_dist, key[0])
+            if nearest_points.get_max() > abs(new_fts[self.a] - self.sp): # a'th coordinate of our point minus split point on that a-axis = distance to the line
+                print(nearest_points.get_max())
 
                 check_box = True # search the other side of the box
             print("went deeper, and check box came back", check_box)
-            nearest_points.add(myMin)
-            return nearest_points, check_box
+            print(flag)
+
+            if flag:
+                return nearest_points
+            else:
+                print("depth is", depth)
+                return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
 
 
         if new_fts[self.a] == self.sp: # you were probably already in our list given how specific we are about coordinates, but the more the merrier. let's try to find your nearest points by looking for all the things in this box.
@@ -277,7 +300,13 @@ class KDTree():
                 check_box = True
             print("self.same is", self.same)
             print("went deeper, and check box came back", check_box)
-            return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
+            print(flag)
+
+            if flag:
+                return nearest_points
+            else:
+                print("depth is", depth)
+                return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
         else:
             check_box = False
             min_dist = np.sqrt(np.einsum('i, i->', new_fts[1:] - self.same[0][1:], new_fts[1:] - self.same[0][1:])) # gets the coordinates of the 0th thing in the list and finds distance to it
@@ -297,27 +326,37 @@ class KDTree():
                 check_box = True
             print("self.same is", self.same)
             print("went deeper, and check box came back", check_box)
+            print(flag)
+
+            if flag:
+                return nearest_points
+            else:
+                print("depth is", depth)
+                return nearest_points, check_box # check the other boxes anyway? when we break out of this loop
 # create some n-dimensional points
 # array that the data lives in is a 2d array, but the KDTree is (or however many d)
 
 class DistanceHeap():
     def __init__(self, maxLen):
         self.array = []
-        heapq._heapify_max(self.array)
+        heapq.heapify_max(self.array)
         self.track_ids = {}
         self.max = maxLen
     def add(self, newDistance, newID):
-        if (len(self.array) >= maxLen): # if the new item is less than the largest item in the heap, replace that largest item in the heap
-            largest_dist = heapq.pushpop_max(self.array, newDistance)
-            self.track_ids.pop[largest_dist]
+        if (len(self.array) >= self.max): # if the new item is less than the largest item in the heap, replace that largest item in the heap
+            largest_dist = heapq.heapreplace_max(self.array, newDistance)
+            del self.track_ids[largest_dist]
             self.track_ids[newDistance] = newID
         else:
-            heapq.push_max(self.array)
+            heapq.heappush_max(self.array, newDistance)
             self.track_ids[newDistance] = newID # hope and pray no two songs will have the exact same distance right
-
+    def get_max(self):
+        if len(self.array) < self.max:
+            return 1e8 # very big negative number that our function is certainly smaller than
+        return hq.nlargest(1, self.array)[0]
 if __name__ == '__main__':
 	my4dPoints = np.random.rand(100, 4)
-	mySongs = read_csv()
+	mySongs = pd.read_csv("embedding.csv")
 	myKDTree = KDTree(mySongs.to_numpy())
 	for song in mySongs.to_numpy():
 	    if song[0] == '58q2HKrzhC3ozto2nDdN4z':
@@ -330,4 +369,5 @@ if __name__ == '__main__':
 #	print(mySongs.to_numpy().shape)
 #	print(myKDTree.k_nearest(melancholy_rounded))
 #	print(myKDTree.k_nearest(melancholy_direct))
+	print(myKDTree.k_nearest(problematic))
 	print(myKDTree.k_nearest(problematic))
