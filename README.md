@@ -6,7 +6,7 @@ Better Spotify Recs is built on a spotify playlist set of 1000 playlist. It embe
 
 ## Getting Started
 
-### Dependencies
+### Dependencies Needed
 
 * libraries used:
   - json
@@ -20,17 +20,16 @@ Better Spotify Recs is built on a spotify playlist set of 1000 playlist. It embe
   - itertools
   - heapq
 
- ### Installing
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+### Executing program
 
-### Executing progra
+* After downloading zip file:
+* Run main() for interactive terminal program showing song recommendations
+* experiment() contains commented code at bottom for running various experiments
+* seeker() contains commented code that will print the k-nearest points demonstrating KD Tree functionality
 
-* How to run the program
-* Step-by-step bullets
-```
-code blocks for commands
+
+
 
    
 
