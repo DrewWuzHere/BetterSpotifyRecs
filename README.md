@@ -19,6 +19,8 @@ Better Spotify Recs is built on a spotify playlist set of 1000 playlists. It emb
   - networkx
   - itertools
   - heapq
+  - heapq_max
+  - copy
 
 
 ### Executing program
