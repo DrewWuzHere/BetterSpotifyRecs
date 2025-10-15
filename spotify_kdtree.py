@@ -80,25 +80,25 @@ class KDTree():
             print("self.same is", self.same)
             print("went deeper, and check box came back", check_box)
             return min_dist, closest_track, check_box # check the other boxes anyway? when we break out of this loop
-    
+
         # case 1: leaf node
         if (self.fc == None and self.sc == None):
-           #print("found a leaf node, we should look along the axis that split to get to this point")
-           check_box = False
-           min_dist = np.sqrt(np.einsum('i, i->', new_fts[1:] - self.same[0][1:], new_fts[1:] - self.same[0][1:])) # gets the coordinates of the 0th thing in the list and finds distance to it
-           closest_track = self.same[0][0] # track id of first item on the axis
-           for same_array in self.same:
-               poss_dist = np.sqrt(np.einsum('i, i->', new_fts[1:] - same_array[1:], new_fts[1:] - same_array[1:]))
-               if poss_dist < min_dist:
-                   min_dist = poss_dist # saves the new minimum distance
-                   closest_track = key
-           if min_dist > abs(new_fts[self.a] - self.sp): # a'th coordinate of our point minus split point on that a-axis = distance to the line
-               # search the other side of the box
-               print(min_dist)
-               check_box = True
-           print("self.same is", self.same)
-           print("went deeper, and check box came back", check_box)
-           return min_dist, closest_track, check_box # check the other boxes anyway? when we break out of this loop
+            #print("found a leaf node, we should look along the axis that split to get to this point")
+            check_box = False
+            min_dist = np.sqrt(np.einsum('i, i->', new_fts[1:] - self.same[0][1:], new_fts[1:] - self.same[0][1:])) # gets the coordinates of the 0th thing in the list and finds distance to it
+            closest_track = self.same[0][0] # track id of first item on the axis
+            for same_array in self.same:
+                poss_dist = np.sqrt(np.einsum('i, i->', new_fts[1:] - same_array[1:], new_fts[1:] - same_array[1:]))
+                if poss_dist < min_dist:
+                    min_dist = poss_dist # saves the new minimum distance
+                    closest_track = key
+            if min_dist > abs(new_fts[self.a] - self.sp): # a'th coordinate of our point minus split point on that a-axis = distance to the line
+                # search the other side of the box
+                print(min_dist)
+                check_box = True
+            print("self.same is", self.same)
+            print("went deeper, and check box came back", check_box)
+            return min_dist, closest_track, check_box # check the other boxes anyway? when we break out of this loop
 
            # happens when we look for a song not in our dataset
            # never fear, just look for the self.same and then move our way back up the data tree!
@@ -208,7 +208,6 @@ class KDTree():
         global nearest_points
         flag = False
         if depth == 0:
-            #print("heyo!")
             flag = True
             nearest_points = DistanceHeap(k)
         #print("start of stackframe: depth is", depth)
@@ -239,8 +238,6 @@ class KDTree():
 
         elif (self.fc != None and new_fts[self.a] < self.sp) or (self.sc != None and new_fts[self.a] > self.sp):
 
-           # happens when we look for a song not in our dataset
-           # never fear, just look for the self.same and then move our way back up the data tree!
             if self.fc != None and new_fts[self.a] < self.sp: # if new fts on axis a is less than the split point, it would have gone into the first half
                 nearest_points, check_other_box = self.fc.k_nearest(new_fts, k = k, depth = depth + 1)
                 depth = save_d
