@@ -26,8 +26,8 @@ Better Spotify Recs is built on a spotify playlist set of 1000 playlists. It emb
 ### Executing program
 
 * After downloading zip file:
-* Run main() for interactive terminal program showing song recommendations
-* experiment() contains commented code at bottom for running various experiments
+* run experiment() for short interactive terminal recommendation program
+* experiment() also contains commented code at bottom for running various experiments
 * seeker() contains commented code that will print the k-nearest points demonstrating KD Tree functionality
 
 
