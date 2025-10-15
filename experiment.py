@@ -59,6 +59,7 @@ def qualityTest(trials):
 
     # loops through playlists in json file
     for i in range(trials):
+        i+= 1
         total_loc = [0] * 13
         playlist = getPlaylist_json(i)
         test_set = playlist['tracks']
@@ -87,11 +88,7 @@ def qualityTest(trials):
                 print(f"Warning: no match found for track_id {track_id}")
                 # skip this track if not found
                 continue  
-            
-            if location[0] == 0:
-                print("ah shit")
 
-                return
             
                         
             # add to cumulitive list
@@ -119,27 +116,29 @@ def qualityTest(trials):
         network = pd.read_csv("edges(in).csv")
 
         # loop through ids in songs recs and if it is found in the csv then add the connections
-        for id in nearest_list:
-            connections = 0
-            # if this is in a pair in the csv
-            match = network[(network['track1'] == id) | (network['track2'] == id)]
-            if not match.empty:
-                connections += match['weight'].sum()
+        total_conns = 0
+        for song_id in nearest_list:
+            match = network[(network['track1'] == song_id) | (network['track2'] == song_id)]
+            match = match[(match['track1'].isin(id_list)) | (match['track2'].isin(id_list))]
+            total_conns += match['weight'].sum()
         
         song_num.append(test_size)
-        edges_num.append(connections)
-    print("connections: ", connections)
+        edges_num.append(total_conns)
+    print("connections: ", total_conns)
     print(song_num)
     print(edges_num)
     
+    # zipping together lists
     zipped = list(zip(song_num, edges_num)) 
+    # sorting them
     res = sorted(zipped, key=operator.itemgetter(0))  
+    # unzipped is a list of two lists song_num, edges_num)
     unzipped = [list(t) for t in zip(*res)] 
     song_num = unzipped[0]
     edges_num = unzipped[1]
 
     plt.figure(figsize=(10, 7))
-    plt.plot(song_num, edges_num)
+    plt.scatter(song_num, edges_num)
     plt.title("Playlist Connections vs Number of Songs Queried")
     plt.xlabel("Number of Songs")
     plt.ylabel("Times the Recommend Songs Appeared on Playlists with the Test Songs")
@@ -215,7 +214,7 @@ def getRec(n, playlist):
 
 
 
-playlist = getPlaylist_json(22)
-getRec(5, playlist)
-# qualityTest(3)
+# playlist = getPlaylist_json(22)
+# getRec(5, playlist)
+qualityTest(50)
 # runtimeTest()
